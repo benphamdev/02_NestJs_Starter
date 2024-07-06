@@ -17,7 +17,8 @@ import { UsersModule } from "./users/users.module";
 		}),
 		ConfigModule.forRoot({
 			isGlobal: true
-		})
+		}),
+		UsersModule
 	],
 	controllers: [AppController],
 	providers: [AppService]

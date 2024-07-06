@@ -1,26 +1,44 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { User } from "./schemas/user.schema";
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
+	constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  findAll() {
-    return `This action returns all users`;
-  }
+	hashPassword = (password: string) => {
+		const bcrypt = require("bcryptjs");
+		const salt = bcrypt.genSaltSync(10);
+		const hash = bcrypt.hashSync("B4c0/\/", salt);
+		return hash;
+	};
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+	async create(createUserDto: CreateUserDto) {
+		createUserDto.password = this.hashPassword(createUserDto.password);
+		const newUser = await this.userModel.create(createUserDto);
+		return newUser;
+	}
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+	findAll() {
+		return `This action returns all users`;
+	}
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+	findOne(id: string) {
+		try {
+			return this.userModel.findOne({ _id: id }).select("-__v").exec();
+		} catch (error) {
+			throw new Error(error);
+		}
+	}
+
+	update(id: string, updateUserDto: UpdateUserDto) {
+		return this.userModel.updateOne({ _id: id }, updateUserDto).exec();
+	}
+
+	remove(id: string) {
+		return this.userModel.deleteOne({ _id: id }).exec();
+	}
 }

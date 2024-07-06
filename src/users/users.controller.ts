@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { BaseResponse } from "../shared/BaseResponse";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { UsersService } from "./users.service";
 
-@Controller('users')
+@Controller("api/v1/users")
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+	constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
+	@Post()
+	async create(@Body() createUserDto: CreateUserDto) {
+		let user = await this.usersService.create(createUserDto);
+		return BaseResponse.success<{}>(201, "User created", {
+				_id: user._id,
+				email: user.email
+			}
+		);
+	}
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
+	@Get()
+	findAll() {
+		return this.usersService.findAll();
+	}
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
+	@Get(":id")
+	async findOne(@Param("id") userId: string) {
+		// const id: string = req.params.id;
+		if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+			return { statusCode: 400, message: "Invalid user ID" };
+		}
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
+		let user = await this.usersService.findOne(userId);
+		if (!user)
+			return { statusCode: 404, message: "User not found" };
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
+		const { password, ...rest } = user.toObject();
+
+		return BaseResponse.success<{}>(200, "User found", rest);
+	}
+
+	@Put(":id")
+	async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
+		if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+			return { statusCode: 400, message: "Invalid user ID" };
+		}
+		let response = await this.usersService.update(id, updateUserDto);
+		return BaseResponse.success<{}>(200, "User found", response);
+	}
+
+	@Delete(":id")
+	remove(@Param("id") id: string) {
+		if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+			return { statusCode: 400, message: "Invalid user ID" };
+		}
+		return BaseResponse.success<{}>(200, "User deleted", this.usersService.remove(id));
+	}
 }
