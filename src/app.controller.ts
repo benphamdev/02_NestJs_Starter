@@ -33,7 +33,7 @@ export class AppController {
         return BaseResponse.success(200, "Login successful", response);
     }
 
-    @UseGuards(JwtAuthGuard)
+    // @UseGuards(JwtAuthGuard)
     @Get("api/v1/users/profile")
     getProfile(@Request() req) {
         return BaseResponse.success(200, "User profile", req.user);
