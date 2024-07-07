@@ -5,3 +5,5 @@
 #### 2. Chạy dự án với câu lệnh: npm run dev
 
 npm install --save-exact @nestjs/mongoose@9.2.2 mongoose@7.1.0
+
+nestjs config service inside super

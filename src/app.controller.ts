@@ -2,6 +2,7 @@ import { Controller, Get, HttpCode, Post, Render, Request, UseGuards } from "@ne
 import { ConfigService } from "@nestjs/config";
 import { AppService } from "./app.service";
 import { AuthService } from "./auth/auth.service";
+import { JwtAuthGuard } from "./auth/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/local-auth.guard";
 import { BaseResponse } from "./shared/BaseResponse";
 
@@ -27,8 +28,14 @@ export class AppController {
     @HttpCode(200)
     async login(@Request() req) {
         // return req.user;
-        console.log(req.user);
+
         let response = await this.authService.login(req.user);
         return BaseResponse.success(200, "Login successful", response);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("api/v1/users/profile")
+    getProfile(@Request() req) {
+        return BaseResponse.success(200, "User profile", req.user);
     }
 }
