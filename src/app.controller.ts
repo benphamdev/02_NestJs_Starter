@@ -2,7 +2,7 @@ import { Controller, Get, HttpCode, Post, Render, Request, UseGuards } from "@ne
 import { ConfigService } from "@nestjs/config";
 import { AppService } from "./app.service";
 import { AuthService } from "./auth/auth.service";
-import { JwtAuthGuard } from "./auth/jwt-auth.guard";
+import { Public } from "./auth/decorators/public.decorator";
 import { LocalAuthGuard } from "./auth/local-auth.guard";
 import { BaseResponse } from "./shared/BaseResponse";
 
@@ -26,6 +26,7 @@ export class AppController {
     @UseGuards(LocalAuthGuard)
     @Post("api/v1/auth/login")
     @HttpCode(200)
+    @Public()
     async login(@Request() req) {
         // return req.user;
 
